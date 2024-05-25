@@ -8,8 +8,6 @@ import {
   TUserName,
 } from './student.interface';
 import validator from 'validator';
-import bcrypt from 'bcrypt';
-import config from '../../app/config';
 
 const usernameSchema = new Schema<TUserName>({
   firstName: {
@@ -91,10 +89,11 @@ const studnentShema = new Schema<TStudent, StudentModel>(
       required: true,
       unique: true,
     },
-    password: {
-      type: String,
-      required: true,
-      maxlength: 20,
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'user id is requrired'],
+      unique: true,
+      ref: 'User',
     },
     name: {
       type: usernameSchema,
@@ -156,15 +155,6 @@ const studnentShema = new Schema<TStudent, StudentModel>(
       type: String,
       required: true,
     },
-    isActive: {
-      type: String,
-      enum: {
-        values: ['active', 'blocked'],
-        message: "it must be as following: 'active', 'blocked'",
-      },
-      required: true,
-      default: 'active',
-    },
     isDeleted: {
       type: Boolean,
       default: false,
@@ -183,20 +173,6 @@ studnentShema.virtual('fullName').get(function () {
   return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
 });
 
-// pre save middleware/ hook
-
-studnentShema.pre('save', async function (next) {
-  console.log(this, 'pre hook: we will save data');
-
-  const user = this;
-
-  user.password = await bcrypt.hash(
-    user.password,
-    Number(config.bcrypt_salt_round),
-  );
-  next();
-});
-
 studnentShema.pre('find', async function (next) {
   this.find({ isDeleted: { $ne: true } });
   next();
@@ -211,23 +187,12 @@ studnentShema.pre('aggregate', async function (next) {
   next();
 });
 
-studnentShema.post('save', function (doc, next) {
-  doc.password = '';
-  next();
-});
-
 // creating a custom static method
 
 studnentShema.statics.isUserExists = async function (id: string) {
   const existingUser = await Student.findOne({ id });
   return existingUser;
 };
-
-// custom instance method
-// studnentShema.methods.isUserExists = async function (id: string) {
-//   const existingUser = await Student.findOne({ id });
-//   return existingUser;
-// };
 
 const Student = model<TStudent, StudentModel>('Student', studnentShema);
 
