@@ -1,75 +1,50 @@
-import { NextFunction, Request, Response } from 'express';
+import { RequestHandler } from 'express';
 import { StdudentService } from './student.service';
-import studentValidationSchema from './student.validation';
-import studentZodSchema from './student.zodvalidation';
+
 import sendRespone from '../../app/utils/sendRespone';
 import { StatusCodes } from 'http-status-codes';
+import catchAsync from '../../app/utils/catchAsync';
 
-const getAllStudent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const result = await StdudentService.getAllStudentIntoDb();
+const getAllStudent: RequestHandler = catchAsync(async (req, res) => {
+  const result = await StdudentService.getAllStudentIntoDb();
 
-    // send response;
+  // send response;
 
-    sendRespone(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'student is retrieved successfully',
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  sendRespone(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'student is retrieved successfully',
+    data: result,
+  });
+});
 
-const getSingleStudent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const { studentId } = req.params;
+const getSingleStudent: RequestHandler = catchAsync(async (req, res) => {
+  const { studentId } = req.params;
 
-    const result = await StdudentService.getSingleStudentIntoDb(studentId);
+  const result = await StdudentService.getSingleStudentIntoDb(studentId);
 
-    // send response;
+  // send response;
 
-    sendRespone(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'student is retrieved successfully',
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-const deletedStudent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const { studentId } = req.params;
+  sendRespone(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'student is retrieved successfully',
+    data: result,
+  });
+});
+const deletedStudent: RequestHandler = catchAsync(async (req, res) => {
+  const { studentId } = req.params;
+  const result = await StdudentService.dleteStudentIntoDb(studentId);
 
-    const result = await StdudentService.dleteStudentIntoDb(studentId);
+  // send response;
 
-    // send response;
-
-    sendRespone(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'student deleted successfully',
-      data: result,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+  sendRespone(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'student deleted successfully',
+    data: result,
+  });
+});
 
 export const studentControllers = {
   getAllStudent,
