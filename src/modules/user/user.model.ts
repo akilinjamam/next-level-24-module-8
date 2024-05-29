@@ -8,6 +8,7 @@ const userSchema = new Schema<TUser>(
     id: {
       type: String,
       required: true,
+      unique: true,
     },
     password: {
       type: String,
@@ -42,8 +43,6 @@ const userSchema = new Schema<TUser>(
 // pre save middleware/ hook
 
 userSchema.pre('save', async function (next) {
-  console.log(this, 'pre hook: we will save data');
-
   const user = this;
 
   user.password = await bcrypt.hash(

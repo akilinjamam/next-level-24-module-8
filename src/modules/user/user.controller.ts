@@ -1,5 +1,4 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
-import createStudentZodSchema from '../student/student.zodvalidation';
+import { RequestHandler } from 'express';
 import { userService } from './user.service';
 import sendRespone from '../../app/utils/sendRespone';
 import { StatusCodes } from 'http-status-codes';

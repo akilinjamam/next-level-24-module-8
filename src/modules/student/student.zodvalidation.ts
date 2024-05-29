@@ -46,6 +46,7 @@ export const createStudentZodSchema = z.object({
       parmanentAddres: z.string(),
       guardian: createguardianZodSchema,
       localGuardian: createLocalZodSchema,
+      admissionSemester: z.string(),
       profileImg: z.string().optional(),
     }),
   }),
