@@ -30,6 +30,6 @@ export const Months: TMonths[] = [
 export const academicSemesterNameCodeMapping: TAcademicSemesterNameCodeMapper =
   {
     Autumn: '01',
-    summer: '02',
+    Summer: '02',
     Fall: '03',
   };
