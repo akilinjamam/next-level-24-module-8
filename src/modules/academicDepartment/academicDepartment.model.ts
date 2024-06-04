@@ -28,7 +28,10 @@ academicDepartmentShema.pre('save', async function (next) {
     name: this.name,
   });
   if (isDepartmentExists) {
-    throw new Error('this deparment is already exists!');
+    throw new AppError(
+      StatusCodes.NOT_FOUND,
+      'this deparment is already exists!',
+    );
   }
 
   next();

@@ -11,6 +11,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// testing unhandle rejection
+// const test = async (req: Request, res: Response) => {
+//   Promise.reject();
+// };
+
+// app.get('/', test);
+
 app.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
 });

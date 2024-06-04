@@ -6,7 +6,10 @@ import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../app/utils/catchAsync';
 
 const getAllStudent: RequestHandler = catchAsync(async (req, res) => {
-  const result = await StdudentService.getAllStudentIntoDb();
+  const value = req.query;
+  console.log(value);
+
+  const result = await StdudentService.getAllStudentIntoDb(value);
 
   // send response;
 
