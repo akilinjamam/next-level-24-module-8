@@ -3,62 +3,36 @@ import Student from './student.model';
 import { AppError } from '../../app/errors/AppError';
 import { StatusCodes } from 'http-status-codes';
 import { TStudent } from './student.interface';
+import QueryBuilder from '../../app/builder/QueryBuilder';
+import { studentSearchableFields } from './student.constant';
+import User from '../user/user.model';
 
 const getAllStudentIntoDb = async (query: Record<string, unknown>) => {
-  // {email: {$regex: query.searchTerm, $options: i}}
-  const studentSearchableFields = ['email', 'name.firstName', 'presentAddress'];
-  let searchTerm = '';
+  const studentQuery = new QueryBuilder(
+    Student.find()
+      .populate('admissionSemester')
+      .populate({
+        path: 'academicDepartment',
+        populate: {
+          path: 'academicFaculty',
+        },
+      }),
+    query,
+  )
+    .search(studentSearchableFields)
+    .filter()
+    .sort()
+    .pagination()
+    .fields();
 
-  const queryObj = { ...query };
+  const result = await studentQuery.modelQuery;
 
-  if (query?.searchTerm) {
-    searchTerm = query?.searchTerm as string;
-  }
-
-  const excludeFields = ['searchTerm', 'sort', 'limit'];
-
-  excludeFields.forEach((el) => delete queryObj[el]);
-
-  console.log({ query, queryObj });
-
-  const searchQuery = Student.find({
-    $or: studentSearchableFields.map((field) => ({
-      [field]: { $regex: searchTerm, $options: 'i' },
-    })),
-  });
-
-  const filterQuery = searchQuery
-    .find(queryObj)
-    .populate('admissionSemester')
-    .populate({
-      path: 'academicDepartment',
-      populate: {
-        path: 'academicFaculty',
-      },
-    });
-
-  let sort = '-createdAt';
-
-  if (query.sort) {
-    sort = query.sort as string;
-  }
-
-  const sortQuery = filterQuery.sort(sort);
-
-  let limit = 1;
-
-  if (query.limit) {
-    limit = query.limit as number;
-  }
-
-  const limitQuery = await sortQuery.limit(limit);
-
-  return limitQuery;
+  return result;
 };
 
 const getSingleStudentIntoDb = async (id: string) => {
   // const result = await Student.findOne({ id });
-  const result = await Student.findOne({ id: id })
+  const result = await Student.findById({ _id: id })
     .populate('admissionSemester')
     .populate({
       path: 'academicDepartment',
@@ -74,18 +48,20 @@ const dleteStudentIntoDb = async (id: string) => {
   try {
     session.startTransaction();
 
-    const deletedStudent = await Student.findOneAndUpdate(
+    const deletedStudent = await Student.findByIdAndUpdate(
       { id },
       { isDeleted: true },
       { new: true, session },
     );
 
+    const userId = deletedStudent?.user
+
     if (!deletedStudent) {
       throw new AppError(StatusCodes.BAD_REQUEST, 'failed to delete student');
     }
 
-    const deletedUser = await Student.findOneAndUpdate(
-      { id },
+    const deletedUser = await User.findByIdAndUpdate(
+      { userId },
       { isDeleted: true },
       { new: true, session },
     );
@@ -132,7 +108,7 @@ const updateStudentIntoDb = async (id: string, payload: Partial<TStudent>) => {
 
   console.log(modifiedUpdatedData);
 
-  const result = await Student.findOneAndUpdate(
+  const result = await Student.findByIdAndUpdate(
     { id: id },
     modifiedUpdatedData,
     { new: true },

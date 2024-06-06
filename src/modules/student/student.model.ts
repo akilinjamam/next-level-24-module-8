@@ -178,7 +178,11 @@ const studnentShema = new Schema<TStudent, StudentModel>(
 // mongoose virtual
 
 studnentShema.virtual('fullName').get(function () {
-  return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`;
+  if (this?.name?.firstName && this?.name?.middleName && this?.name?.lastName) {
+    return `${this?.name?.firstName} ${this?.name?.middleName} ${this?.name?.lastName}`;
+  } else {
+    return null;
+  }
 });
 
 studnentShema.pre('find', async function (next) {

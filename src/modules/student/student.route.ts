@@ -13,5 +13,4 @@ router.patch(
   validateRequest(updateStudentZodSchema),
   studentControllers.updateStudent,
 );
-
 export const studentRouter = router;
