@@ -133,7 +133,7 @@ const createFacultyIntoDB = async (password: string, payload: TFaculty) => {
 const createAdminIntoDB = async (password: string, payload: TAdmin) => {
   // create a user object
   const userData: Partial<TUser> = {};
-
+  console.log('admin');
   //if password is not given , use deafult password
   userData.password = password || (config.default_password as string);
 

@@ -1,15 +1,15 @@
-import express, { Application, NextFunction, Request, Response } from 'express';
+import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
-import { studentRouter } from './modules/student/student.route';
-import { userRouter } from './modules/user/user.route';
 import globalErrorHandler from './app/middleware/globalErrorHandler';
 import notFoundRoute from './app/middleware/notFoundRoute';
 import router from './app/routes';
+import cookieParser from 'cookie-parser';
 const app: Application = express();
 
-app.use(cors());
+app.use(cors({ origin: ['http://localhost:5173'] }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // testing unhandle rejection
 // const test = async (req: Request, res: Response) => {

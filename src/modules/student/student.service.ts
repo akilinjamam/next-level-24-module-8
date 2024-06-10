@@ -10,6 +10,7 @@ import User from '../user/user.model';
 const getAllStudentIntoDb = async (query: Record<string, unknown>) => {
   const studentQuery = new QueryBuilder(
     Student.find()
+      .populate('user')
       .populate('admissionSemester')
       .populate({
         path: 'academicDepartment',
@@ -54,7 +55,7 @@ const dleteStudentIntoDb = async (id: string) => {
       { new: true, session },
     );
 
-    const userId = deletedStudent?.user
+    const userId = deletedStudent?.user;
 
     if (!deletedStudent) {
       throw new AppError(StatusCodes.BAD_REQUEST, 'failed to delete student');

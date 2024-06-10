@@ -1,9 +1,9 @@
 import { Schema, model } from 'mongoose';
-import { TUser } from './user.interface';
+import { TUser, UserModel } from './user.interface';
 import bcrypt from 'bcrypt';
 import config from '../../app/config/index';
 
-const userSchema = new Schema<TUser>(
+const userSchema = new Schema<TUser, UserModel>(
   {
     id: {
       type: String,
@@ -13,6 +13,7 @@ const userSchema = new Schema<TUser>(
     password: {
       type: String,
       required: true,
+      select: 0,
     },
     needsPasswordChange: {
       type: Boolean,
@@ -33,6 +34,9 @@ const userSchema = new Schema<TUser>(
     isDeleted: {
       type: Boolean,
       default: false,
+    },
+    passwordChangedAt: {
+      type: Date,
     },
   },
   {
@@ -57,5 +61,29 @@ userSchema.post('save', function (doc, next) {
   next();
 });
 
-const User = model<TUser>('User', userSchema);
+userSchema.statics.isUserExistsByCustomId = async function (id: string) {
+  return await User.findOne({ id }).select('+password'); // it will include password and plus sign will add remaining properties
+};
+
+userSchema.statics.isPasswordExists = async function (
+  plainTextPassword,
+  hasedPassword,
+) {
+  const result = bcrypt.compare(plainTextPassword, hasedPassword);
+  return result;
+};
+
+userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
+  passwordChangedTimestamp: Date,
+  jwtIssuedTimetamp: number,
+) {
+  // console.log(passwordChangedTimestamp, jwtIssuedTimetamp);
+
+  const passwordChangedTime =
+    new Date(passwordChangedTimestamp).getTime() / 1000;
+  console.log(passwordChangedTime > jwtIssuedTimetamp);
+  return passwordChangedTime > jwtIssuedTimetamp;
+};
+
+const User = model<TUser, UserModel>('User', userSchema);
 export default User;

@@ -81,6 +81,8 @@ export const findLastAdminId = async () => {
     })
     .lean();
 
+  console.log(lastAdmin);
+
   return lastAdmin?.id ? lastAdmin.id.substring(2) : undefined;
 };
 
