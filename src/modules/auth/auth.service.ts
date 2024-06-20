@@ -6,6 +6,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../../app/config';
 import bcrypt from 'bcrypt';
 import { createToken } from './auth.utils';
+import { sendEmail } from '../../app/utils/sendEmail';
 
 const loginUser = async (body: TLoginUser) => {
   const isUserExists = await User.isUserExistsByCustomId(body?.id);
@@ -91,8 +92,8 @@ const changePassword = async (
     Number(config.bcrypt_salt_round),
   );
 
-  console.log('hashed:', newHashedPassword);
-  console.log(user?.userId, user?.role);
+  // console.log('hashed:', newHashedPassword);
+  // console.log(user?.userId, user?.role);
 
   const result = await User.findOneAndUpdate(
     {
@@ -165,8 +166,45 @@ const refreshToken = async (token: string) => {
   };
 };
 
+const forgetPassword = async (userId: string) => {
+  const isUserExists = await User.isUserExistsByCustomId(userId);
+
+  if (!isUserExists) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'user not found');
+  }
+  // checking if the user already deleted
+  const isDeleted = isUserExists.isDeleted;
+
+  if (isDeleted) {
+    throw new AppError(StatusCodes.FORBIDDEN, 'user is deleted');
+  }
+
+  const userStatus = isUserExists.status;
+
+  if (userStatus === 'blocked') {
+    throw new AppError(StatusCodes.FORBIDDEN, 'user is blocked');
+  }
+
+  const jwtPayload = {
+    userId: isUserExists?.id,
+    role: isUserExists?.role,
+  };
+  const resetToken = createToken(
+    jwtPayload,
+    config.jwt_access_secret as string,
+    '10m',
+  );
+
+  const resetUILink = `http://localhost:3000?id=${isUserExists.id}&token=${resetToken}`;
+
+  sendEmail();
+
+  console.log(resetUILink);
+};
+
 export const AuthService = {
   loginUser,
   changePassword,
   refreshToken,
+  forgetPassword,
 };

@@ -10,6 +10,11 @@ const userSchema = new Schema<TUser, UserModel>(
       required: true,
       unique: true,
     },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     password: {
       type: String,
       required: true,
@@ -47,6 +52,7 @@ const userSchema = new Schema<TUser, UserModel>(
 // pre save middleware/ hook
 
 userSchema.pre('save', async function (next) {
+  // eslint-disable-next-line @typescript-eslint/no-this-alias
   const user = this;
 
   user.password = await bcrypt.hash(
