@@ -5,7 +5,7 @@ import { TLoginUser, TPasswordChange } from './auth.interface';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../../app/config';
 import bcrypt from 'bcrypt';
-import { createToken } from './auth.utils';
+import { createToken, verifyToken } from './auth.utils';
 import { sendEmail } from '../../app/utils/sendEmail';
 
 const loginUser = async (body: TLoginUser) => {
@@ -116,10 +116,7 @@ const refreshToken = async (token: string) => {
     throw new AppError(StatusCodes.UNAUTHORIZED, 'You are not authorized');
   }
 
-  const decoded = jwt.verify(
-    token,
-    config.jwt_refresh_secret as string,
-  ) as JwtPayload;
+  const decoded = verifyToken(token, config.jwt_refresh_secret as string);
 
   const { userId, iat } = decoded;
 
@@ -195,11 +192,65 @@ const forgetPassword = async (userId: string) => {
     '10m',
   );
 
-  const resetUILink = `http://localhost:3000?id=${isUserExists.id}&token=${resetToken}`;
+  const resetUILink = `${config.reset_pass_ui_link}?id=${isUserExists.id}&token=${resetToken}`;
 
-  sendEmail();
+  sendEmail(isUserExists?.email, resetUILink);
 
   console.log(resetUILink);
+};
+const resetPassword = async (
+  payload: { id: string; newPassword: string },
+  token: string,
+) => {
+  const isUserExists = await User.isUserExistsByCustomId(payload.id);
+
+  if (!isUserExists) {
+    throw new AppError(StatusCodes.NOT_FOUND, 'user not found');
+  }
+  // checking if the user already deleted
+  const isDeleted = isUserExists.isDeleted;
+
+  if (isDeleted) {
+    throw new AppError(StatusCodes.FORBIDDEN, 'user is deleted');
+  }
+
+  const userStatus = isUserExists.status;
+
+  if (userStatus === 'blocked') {
+    throw new AppError(StatusCodes.FORBIDDEN, 'user is blocked');
+  }
+
+  const decoded = jwt.verify(
+    token,
+    config.jwt_access_secret as string,
+  ) as JwtPayload;
+
+  // const { userId, iat } = decoded;
+  console.log(decoded);
+
+  if (payload.id !== decoded.userId) {
+    throw new AppError(
+      StatusCodes.FORBIDDEN,
+      'user id did not matched. you are forbidden',
+    );
+  }
+
+  const newHashedPassword = await bcrypt.hash(
+    payload.newPassword as string,
+    Number(config.bcrypt_salt_round),
+  );
+
+  const result = await User.findOneAndUpdate(
+    {
+      id: decoded.userId,
+      role: decoded.role,
+    },
+    {
+      password: newHashedPassword,
+    },
+  );
+
+  console.log(result);
 };
 
 export const AuthService = {
@@ -207,4 +258,5 @@ export const AuthService = {
   changePassword,
   refreshToken,
   forgetPassword,
+  resetPassword,
 };

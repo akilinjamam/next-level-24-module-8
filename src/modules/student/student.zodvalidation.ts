@@ -48,7 +48,7 @@ export const createStudentZodSchema = z.object({
       localGuardian: createLocalZodSchema,
       admissionSemester: z.string(),
       academicDepartment: z.string(),
-      profileImg: z.string().optional(),
+      // profileImg: z.string().optional(),
     }),
   }),
 });

@@ -1,14 +1,14 @@
 import nodemailer from 'nodemailer';
 // import config from '../config';
 
-export const sendEmail = async () => {
+export const sendEmail = async (to: string, html: string) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false, // Use `true` for port 465, `false` for all other ports
     auth: {
       user: 'akilinjamam@gmail.com',
-      pass: 'ywmo fais stwa yczw', // this password is collected from google app password
+      pass: 'ywmofaisstwayczw', // this password is collected from google app password
     },
   });
 
@@ -17,10 +17,10 @@ export const sendEmail = async () => {
     // send mail with defined transport object
     const info = await transporter.sendMail({
       from: 'akilinjamam@gmail.com', // sender address
-      to: 'bindasakil31@gmail.com', // list of receivers
-      subject: 'Hello ✔', // Subject line
-      text: 'Hello world?', // plain text body
-      html: '<b>Hello world?</b>', // html body
+      to,
+      subject: 'reset your password within 10 minutes', // Subject line
+      text: '', // plain text body
+      html,
     });
 
     console.log('Message sent: %s', info.messageId);
