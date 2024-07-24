@@ -27,7 +27,7 @@ const userSchema = new Schema<TUser, UserModel>(
     },
     role: {
       type: String,
-      enum: ['student', 'faculty', 'admin'],
+      enum: ['superAdmin', 'student', 'faculty', 'admin'],
       required: true,
     },
     status: {
@@ -87,7 +87,7 @@ userSchema.statics.isJWTIssuedBeforePasswordChanged = function (
 
   const passwordChangedTime =
     new Date(passwordChangedTimestamp).getTime() / 1000;
-  console.log(passwordChangedTime > jwtIssuedTimetamp);
+  // console.log(passwordChangedTime > jwtIssuedTimetamp);
   return passwordChangedTime > jwtIssuedTimetamp;
 };
 

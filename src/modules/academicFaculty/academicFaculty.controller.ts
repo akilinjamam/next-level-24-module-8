@@ -19,7 +19,9 @@ const createAcademicFaculty: RequestHandler = catchAsync(async (req, res) => {
   });
 });
 const getAcademicFaculty: RequestHandler = catchAsync(async (req, res) => {
-  const result = await academicFacultyService.getAcademicFacultyIntoDb();
+  const result = await academicFacultyService.getAcademicFacultyIntoDb(
+    req.query,
+  );
 
   // send response
 
@@ -27,7 +29,8 @@ const getAcademicFaculty: RequestHandler = catchAsync(async (req, res) => {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'academic-faculty retrieved successfully',
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 const getSingleAcademicFaculty: RequestHandler = catchAsync(

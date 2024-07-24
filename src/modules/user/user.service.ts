@@ -43,6 +43,19 @@ const createStudentIntoDb = async (
       payload.admissionSemester,
     );
 
+    const academicDepartment = await AcademicDepartment.findById(
+      payload.academicDepartment,
+    );
+
+    if (!academicDepartment) {
+      throw new AppError(
+        StatusCodes.NOT_FOUND,
+        'Academic department not fount',
+      );
+    }
+
+    payload.academicFaculty = academicDepartment.academicFaculty;
+
     // send image to cloudinary;
 
     // set auto generated id
@@ -50,17 +63,20 @@ const createStudentIntoDb = async (
       admissionSemester as TAcademicSemester,
     );
 
+    if (file?.path) {
+      const filname = `${userData.id}-${payload?.name?.firstName}`;
+      const imageData = await sendImageToCloudinary(file?.path, filname);
+      console.log('result image :', imageData);
+      payload.profileImg = imageData?.secure_url;
+    } else {
+      payload.profileImg = 'student image not added';
+    }
+
     //  create a user (transaction -1)
 
     // create a user
     // first transection -1
     const newUser = await User.create([userData], { session });
-
-    const filname = `${newUser[0].id}-${payload?.name?.firstName}`;
-
-    const imageData = await sendImageToCloudinary(file?.path, filname);
-
-    console.log('result image :', imageData);
 
     if (!newUser.length) {
       throw new AppError(StatusCodes.BAD_REQUEST, 'Failed to create user');
@@ -69,7 +85,6 @@ const createStudentIntoDb = async (
     if (newUser.length) {
       payload.id = newUser[0].id;
       payload.user = newUser[0]._id; //reference id
-      payload.profileImg = imageData?.secure_url;
     }
 
     // create a student
@@ -117,6 +132,8 @@ const createFacultyIntoDB = async (
     throw new AppError(400, 'Academic department not found');
   }
 
+  payload.academicFaculty = academicDepartment?.academicFaculty;
+
   const session = await mongoose.startSession();
 
   try {
@@ -124,14 +141,17 @@ const createFacultyIntoDB = async (
     //set  generated id
     userData.id = await generateFacultyId();
 
+    if (file?.path) {
+      const filname = `${userData.id}-${payload?.name?.firstName}`;
+      const imageData = await sendImageToCloudinary(file?.path, filname);
+      console.log('result image admin :', imageData);
+      payload.profileImg = imageData?.secure_url;
+    } else {
+      payload.profileImg = 'faculty image not added';
+    }
+
     // create a user (transaction-1)
     const newUser = await User.create([userData], { session }); // array
-
-    const filname = `${newUser[0].id}-${payload?.name?.firstName}`;
-
-    const imageData = await sendImageToCloudinary(file?.path, filname);
-
-    console.log('result image admin :', imageData);
 
     //create a faculty
     if (!newUser.length) {
@@ -140,7 +160,6 @@ const createFacultyIntoDB = async (
     // set id , _id as user
     payload.id = newUser[0].id;
     payload.user = newUser[0]._id; //reference _id
-    payload.profileImg = imageData?.secure_url;
 
     // create a faculty (transaction-2)
 
@@ -183,14 +202,17 @@ const createAdminIntoDB = async (
     //set  generated id
     userData.id = await generateAdminId();
 
+    if (file?.path) {
+      const filname = `${userData.id}-${payload?.name?.firstName}`;
+      const imageData = await sendImageToCloudinary(file?.path, filname);
+      console.log('result image admin :', imageData);
+      payload.profileImg = imageData?.secure_url;
+    } else {
+      payload.profileImg = 'admin image not added';
+    }
+
     // create a user (transaction-1)
     const newUser = await User.create([userData], { session });
-
-    const filname = `${newUser[0].id}-${payload?.name?.firstName}`;
-
-    const imageData = await sendImageToCloudinary(file?.path, filname);
-
-    console.log('result image admin :', imageData);
 
     //create a admin
     if (!newUser.length) {
@@ -199,7 +221,6 @@ const createAdminIntoDB = async (
     // set id , _id as user
     payload.id = newUser[0].id;
     payload.user = newUser[0]._id; //reference _id
-    payload.profileImg = imageData?.secure_url;
 
     // create a admin (transaction-2)
     const newAdmin = await Admin.create([payload], { session });

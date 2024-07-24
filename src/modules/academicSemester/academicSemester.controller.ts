@@ -1,42 +1,41 @@
-import { NextFunction, Request, RequestHandler, Response } from 'express';
+import { RequestHandler } from 'express';
 
 import sendRespone from '../../app/utils/sendRespone';
 import { StatusCodes } from 'http-status-codes';
 import catchAsync from '../../app/utils/catchAsync';
 import { academicSemesterService } from './academicSemester.service';
 
-const createAcademicSemester: RequestHandler = catchAsync(
-  async (req, res, next) => {
-    const result = await academicSemesterService.createAcademicSemesterIntoDb(
-      req.body,
-    );
+const createAcademicSemester: RequestHandler = catchAsync(async (req, res) => {
+  const result = await academicSemesterService.createAcademicSemesterIntoDb(
+    req.body,
+  );
 
-    // send response
+  // send response
 
-    sendRespone(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'user is created successfully',
-      data: result,
-    });
-  },
-);
-const getAcademicSemester: RequestHandler = catchAsync(
-  async (req, res, next) => {
-    const result = await academicSemesterService.getAcademicSemesterIntoDb();
+  sendRespone(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'academic semester is created successfully',
+    data: result,
+  });
+});
+const getAcademicSemester: RequestHandler = catchAsync(async (req, res) => {
+  const result = await academicSemesterService.getAcademicSemesterIntoDb(
+    req.query,
+  );
 
-    // send response
+  // send response
 
-    sendRespone(res, {
-      success: true,
-      statusCode: StatusCodes.OK,
-      message: 'academic-semester retrieved successfully',
-      data: result,
-    });
-  },
-);
+  sendRespone(res, {
+    success: true,
+    statusCode: StatusCodes.OK,
+    message: 'academic-semester retrieved successfully',
+    meta: result.meta,
+    data: result.data,
+  });
+});
 const getSingleAcademicSemester: RequestHandler = catchAsync(
-  async (req, res, next) => {
+  async (req, res) => {
     const { id } = req.params;
     const result =
       await academicSemesterService.getSingleAcademicSemesterIntoDb(id);
@@ -52,7 +51,7 @@ const getSingleAcademicSemester: RequestHandler = catchAsync(
   },
 );
 const updateSingleAcademicSemester: RequestHandler = catchAsync(
-  async (req, res, next) => {
+  async (req, res) => {
     const { id } = req.params;
     const data = req.body;
     const result =

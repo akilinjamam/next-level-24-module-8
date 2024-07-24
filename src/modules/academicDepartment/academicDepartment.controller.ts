@@ -21,7 +21,9 @@ const createAcademicDepartment: RequestHandler = catchAsync(
   },
 );
 const getAcademicDepartment: RequestHandler = catchAsync(async (req, res) => {
-  const result = await academicDepartmentService.getAcademicDepartmentIntoDb();
+  const result = await academicDepartmentService.getAcademicDepartmentIntoDb(
+    req.query,
+  );
 
   // send response
 
@@ -29,7 +31,8 @@ const getAcademicDepartment: RequestHandler = catchAsync(async (req, res) => {
     success: true,
     statusCode: StatusCodes.OK,
     message: 'academic-department retrieved successfully',
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 const getSingleAcademicDepartment: RequestHandler = catchAsync(

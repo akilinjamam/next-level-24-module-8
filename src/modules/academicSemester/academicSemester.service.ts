@@ -1,8 +1,12 @@
 import { StatusCodes } from 'http-status-codes';
 import { AppError } from '../../app/errors/AppError';
-import { academicSemesterNameCodeMapping } from './academicSemester.constant';
+import {
+  academicSemesterNameCodeMapping,
+  academicSemesterSearchableFields,
+} from './academicSemester.constant';
 import { TAcademicSemester } from './academicSemester.interface';
 import { AcademicSemester } from './academicSemester.model';
+import QueryBuilder from '../../app/builder/QueryBuilder';
 
 const createAcademicSemesterIntoDb = async (payload: TAcademicSemester) => {
   if (academicSemesterNameCodeMapping[payload.name] !== payload.code) {
@@ -13,9 +17,23 @@ const createAcademicSemesterIntoDb = async (payload: TAcademicSemester) => {
   return result;
 };
 
-const getAcademicSemesterIntoDb = async () => {
-  const result = await AcademicSemester.find({});
-  return result;
+const getAcademicSemesterIntoDb = async (query: Record<string, unknown>) => {
+  const academicSemestersQuery = new QueryBuilder(
+    AcademicSemester.find(),
+    query,
+  )
+    .search(academicSemesterSearchableFields)
+    .filter()
+    .sort()
+    .pagination()
+    .fields();
+
+  const data = await academicSemestersQuery.modelQuery;
+  const meta = await academicSemestersQuery.countTotal();
+  return {
+    meta,
+    data,
+  };
 };
 const getSingleAcademicSemesterIntoDb = async (id: string) => {
   const result = await AcademicSemester.findOne({ _id: id });

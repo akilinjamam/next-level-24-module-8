@@ -16,14 +16,15 @@ const getSingleFaculty = catchAsync(async (req, res) => {
 });
 
 const getAllFaculties = catchAsync(async (req, res) => {
-  console.log(req.cookies);
+  // console.log(req.cookies);
   const result = await FacultyServices.getAllFacultiesFromDB(req.query);
 
   sendRespone(res, {
     statusCode: StatusCodes.OK,
     success: true,
     message: 'Faculties are retrieved succesfully',
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 
