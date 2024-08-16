@@ -114,7 +114,7 @@ export const updateStudentZodSchema = z
             localGuardian: updateLocalZodSchema.optional(),
             admissionSemester: z.string().optional(),
             academicDepartment: z.string().optional(),
-            profileImg: z.string().optional(),
+            // profileImg: z.string().optional(),
           })
           .partial(),
       })
